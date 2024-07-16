@@ -32,47 +32,88 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  */
 public class WebDataCollect {
 
-    String url = "https://economictimes.indiatimes.com/markets/indices/nifty-50";
-    String chromeDriverPath = "/home/bhaduri/Documents/chromedriver-linux64/chromedriver";
-    ChromeDriver driver;
-    WebDriverWait wait;
-    String currentTimeStamp;
-    LocalTime currentTime;
-    List<String> scripValuesBuffer;
-    String scripDataFileName;
+    private final String url;
+    private final String chromeDriverPath;
+    private final String scripDataFileName;
+    private final LocalTime endTime;
+    
+    
+    
+    private BufferedWriter scripDataFile;
+    private ChromeDriver driver;
+    private WebDriverWait wait;
+    private String currentTimeStamp;
+    private LocalTime currentTime;
+    private List<String> scripValuesBuffer;
 
+    public WebDataCollect(TarangConfig tarangConfig) {
+        this.url = tarangConfig.getUrl();
+        this.chromeDriverPath = tarangConfig.getChromeDriverPath();
+        this.endTime = LocalTime.of(tarangConfig.getEndTime().getHour(), tarangConfig.getEndTime().getMinute(), tarangConfig.getEndTime().getSecond());
+        this.scripDataFileName = tarangConfig.getScripDataFileName();
+    }
+    
+    
     public void collectData() {
-        
-        LocalTime endTime = LocalTime.of(11, 41, 0);
 
         
 
         initChromeDriver();
+        initOutFile();
         sortByScripId();
-        currentTime = LocalTime.now();
-        try {
-            BufferedWriter scripDataFile = new BufferedWriter(new FileWriter(scripDataFileName,true));
-        } catch (IOException ex) {
-            Logger.getLogger(WebDataCollect.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        getCurrentTimeStamp();
+        
         while (currentTime.isBefore(endTime)) {
-            initScripValuesBuffer();
-            getCurrentTimeStamp();
+            resetScripValuesBuffer();
             getNiftyValue();
             getScripDataByPage(1);
             getScripDataByPage(2);
             getScripDataByPage(3);
             getScripDataByPage(4);
+            writeScripValuesBufferToOutFile();
             sleepForSeconds(5);
+            getCurrentTimeStamp();
+
         }
+        
         driver.close();
+        closeOutFile();
     }
-    private void initScripValuesBuffer() {
+
+    private void resetScripValuesBuffer() {
         scripValuesBuffer = new ArrayList<>();
     }
-    private void writeScripValuesBuffer() {
-        scripDataFile
+    
+
+    
+    private void initOutFile() {
+        try {
+            scripDataFile = new BufferedWriter(new FileWriter(scripDataFileName, true));
+        } catch (IOException ex) {
+            Logger.getLogger(WebDataCollect.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
+    private void closeOutFile() {
+        try {
+            scripDataFile.close();
+        } catch (IOException ex) {
+            Logger.getLogger(WebDataCollect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    private void writeScripValuesBufferToOutFile() {
+        try {
+            for (int i = 0; i < scripValuesBuffer.size(); i++) {
+                //System.out.println("writing.."+scripValuesBuffer.get(i));
+                scripDataFile.write(scripValuesBuffer.get(i));
+                scripDataFile.newLine();
+            }
+            scripDataFile.flush();
+            
+        } catch (IOException ex) {
+            Logger.getLogger(WebDataCollect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     private void getCurrentTimeStamp() {
         Date timeStamp = new java.util.Date();
         currentTime = LocalTime.now();
@@ -159,8 +200,8 @@ public class WebDataCollect {
             }
         }
 
-
     }
+
     private void sleepForSeconds(int sleepSeconds) {
         try {
             Thread.sleep(Duration.ofSeconds(sleepSeconds));
@@ -168,6 +209,5 @@ public class WebDataCollect {
             Logger.getLogger(WebDataCollect.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
 
 }
