@@ -4,10 +4,14 @@
  */
 package org.bhaduri.tarangwebdatarobot;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -27,35 +31,54 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * @author bhaduri
  */
 public class WebDataCollect {
-    
+
     String url = "https://economictimes.indiatimes.com/markets/indices/nifty-50";
     String chromeDriverPath = "/home/bhaduri/Documents/chromedriver-linux64/chromedriver";
     ChromeDriver driver;
     WebDriverWait wait;
-    String timeStamp;
-    
+    String currentTimeStamp;
+    LocalTime currentTime;
+    List<String> scripValuesBuffer;
+    String scripDataFileName;
+
     public void collectData() {
-        LocalTime currentTimeStamp = LocalTime.now();
-        LocalTime startTime = LocalTime.of(15, 30, 0);
+        
+        LocalTime endTime = LocalTime.of(11, 41, 0);
 
-        //Date startTimeStamp = new java.util.Date("2024-07-14 09:30:00.000");
-        //timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(currentTimeStamp);
-        if (currentTimeStamp.isBefore(startTime)) {
-            System.out.println(startTime);
+        
+
+        initChromeDriver();
+        sortByScripId();
+        currentTime = LocalTime.now();
+        try {
+            BufferedWriter scripDataFile = new BufferedWriter(new FileWriter(scripDataFileName,true));
+        } catch (IOException ex) {
+            Logger.getLogger(WebDataCollect.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-//        initChromeDriver();
-//        sortByScripId();
-//        getNiftyValue();
-//        getFirst(1);
-//        getFirst(2);
-//        getFirst(3);
-//        getFirst(4);
-//       driver.close();
-
-        /*get the first page price*/
+        while (currentTime.isBefore(endTime)) {
+            initScripValuesBuffer();
+            getCurrentTimeStamp();
+            getNiftyValue();
+            getScripDataByPage(1);
+            getScripDataByPage(2);
+            getScripDataByPage(3);
+            getScripDataByPage(4);
+            sleepForSeconds(5);
+        }
+        driver.close();
     }
-    
+    private void initScripValuesBuffer() {
+        scripValuesBuffer = new ArrayList<>();
+    }
+    private void writeScripValuesBuffer() {
+        scripDataFile
+    }
+    private void getCurrentTimeStamp() {
+        Date timeStamp = new java.util.Date();
+        currentTime = LocalTime.now();
+        currentTimeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(timeStamp);
+    }
+
     private void initChromeDriver() {
         System.setProperty("webdriver.chrome.driver", chromeDriverPath);
         ChromeOptions chromeOptions = new ChromeOptions();
@@ -85,13 +108,13 @@ public class WebDataCollect {
             Logger.getLogger(WebDataCollect.class.getName()).log(Level.INFO, null, ex);
         }
     }
-    
+
     private void getNiftyValue() {
         /*get the nifty 50 price.*/
         WebElement niftyValueElement = driver.findElement(By.xpath("//*[@id='overview']/div[2]"));
         //List<String> niftyValues = niftyValueElement.stream().map(x -> x.getText().replaceAll("\\n", " ").replaceAll("\\₹|\\,","" )).collect(Collectors.toList());
         String niftyValue = niftyValueElement.getText().replaceAll("\\n", " ").replaceAll("\\₹|\\,", "");
-        System.out.println("NIFTY50 " + niftyValue);
+        scripValuesBuffer.add("NIFTY50," + niftyValue + "," + currentTimeStamp);
     }
 
     /**
@@ -99,7 +122,7 @@ public class WebDataCollect {
      *
      * @param pageCount page number in pagination
      */
-    private void getFirst(int pageCount) {
+    private void getScripDataByPage(int pageCount) {
         int paginationButtonCounter = pageCount + 1;
         /*click the active pagination button on the page*/
         try {
@@ -130,17 +153,21 @@ public class WebDataCollect {
                 List<String> scripLtpValues = scripLtpValueElements.stream().map(x -> x.getText().replaceAll("[\\t\\n\\r]+", " ").replaceAll(",", "")).collect(Collectors.toList());
                 List<String> scripVolValues = scripVolValueElements.stream().map(x -> x.getText().replaceAll(",", "")).collect(Collectors.toList());
                 for (int i = 0; i < scripLtpValues.size(); i++) {
-                    System.out.println(scripLtpValues.get(i) + " " + scripVolValues.get(i));
+                    scripValuesBuffer.add(scripLtpValues.get(i) + "," + scripVolValues.get(i) + "," + currentTimeStamp);
                 }
                 break;
             }
         }
 
-//        try {
-//            Thread.sleep(Duration.ofSeconds(2));
-//        } catch (InterruptedException ex) {
-//            Logger.getLogger(WebDataCollect.class.getName()).log(Level.SEVERE, null, ex);
-//        }
+
+    }
+    private void sleepForSeconds(int sleepSeconds) {
+        try {
+            Thread.sleep(Duration.ofSeconds(sleepSeconds));
+        } catch (InterruptedException ex) {
+            Logger.getLogger(WebDataCollect.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
+
 }
