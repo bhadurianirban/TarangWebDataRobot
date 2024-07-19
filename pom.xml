@@ -9,7 +9,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <exec.mainClass>org.bhaduri.tarangwebdatarobot.WebDataRobotMain</exec.mainClass>
+        <exec.mainClass>org.bhaduri.tarangwebdatarobot.scrapdata.WebDataRobotMain</exec.mainClass>
     </properties>
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java -->
@@ -42,7 +42,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        org.bhaduri.tarangwebdatarobot.WebDataRobotMain
+                                        org.bhaduri.tarangwebdatarobot.scrapdata.WebDataRobotMain
                                     </mainClass>
                                 </manifest>
                             </archive>

@@ -2,14 +2,15 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package org.bhaduri.tarangwebdatarobot;
+package org.bhaduri.tarangwebdatarobot.scrapdata;
 
+import org.bhaduri.tarangwebdatarobot.config.TarangConfig;
+import org.bhaduri.tarangwebdatarobot.config.ConfigValues;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,7 +23,6 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -32,10 +32,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  */
 public class WebDataCollect {
 
-    private final String url;
-    private final String chromeDriverPath;
-    private final String scripDataFileName;
-    private final LocalTime endTime;
+   
     
     
     
@@ -46,24 +43,19 @@ public class WebDataCollect {
     private LocalTime currentTime;
     private List<String> scripValuesBuffer;
 
-    public WebDataCollect(TarangConfig tarangConfig) {
-        this.url = tarangConfig.getUrl();
-        this.chromeDriverPath = tarangConfig.getChromeDriverPath();
-        this.endTime = LocalTime.of(tarangConfig.getEndTime().getHour(), tarangConfig.getEndTime().getMinute(), tarangConfig.getEndTime().getSecond());
-        this.scripDataFileName = tarangConfig.getScripDataFileName();
+    public WebDataCollect() {
+        
     }
     
     
     public void collectData() {
-
-        
 
         initChromeDriver();
         initOutFile();
         sortByScripId();
         getCurrentTimeStamp();
         
-        while (currentTime.isBefore(endTime)) {
+        while (currentTime.isBefore(ConfigValues.endTime)) {
             resetScripValuesBuffer();
             getNiftyValue();
             getScripDataByPage(1);
@@ -88,7 +80,7 @@ public class WebDataCollect {
     
     private void initOutFile() {
         try {
-            scripDataFile = new BufferedWriter(new FileWriter(scripDataFileName, true));
+            scripDataFile = new BufferedWriter(new FileWriter(ConfigValues.scripDataFileName, true));
         } catch (IOException ex) {
             Logger.getLogger(WebDataCollect.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -121,13 +113,13 @@ public class WebDataCollect {
     }
 
     private void initChromeDriver() {
-        System.setProperty("webdriver.chrome.driver", chromeDriverPath);
+        System.setProperty("webdriver.chrome.driver", ConfigValues.chromeDriverPath);
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--headless");
         chromeOptions.addArguments("--no-sandbox");
         driver = new ChromeDriver(chromeOptions);
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        driver.get(url);
+        driver.get(ConfigValues.url);
     }
 
     /**
@@ -155,7 +147,7 @@ public class WebDataCollect {
         WebElement niftyValueElement = driver.findElement(By.xpath("//*[@id='overview']/div[2]"));
         //List<String> niftyValues = niftyValueElement.stream().map(x -> x.getText().replaceAll("\\n", " ").replaceAll("\\₹|\\,","" )).collect(Collectors.toList());
         String niftyValue = niftyValueElement.getText().replaceAll("\\n", " ").replaceAll("\\₹|\\,", "");
-        scripValuesBuffer.add("NIFTY50," + niftyValue + "," + currentTimeStamp);
+        scripValuesBuffer.add("NIFTY50 " + niftyValue + ",0," + currentTimeStamp);
     }
 
     /**

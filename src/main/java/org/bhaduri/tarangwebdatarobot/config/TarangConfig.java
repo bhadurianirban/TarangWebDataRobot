@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package org.bhaduri.tarangwebdatarobot;
+package org.bhaduri.tarangwebdatarobot.config;
 
 /**
  *
@@ -12,6 +12,7 @@ public class TarangConfig {
     private String url;
     private String chromeDriverPath;
     private String scripDataFileName;
+    private String scripMapFileName;
     private EndTime endTime;
 
     public String getUrl() {
@@ -38,6 +39,15 @@ public class TarangConfig {
         this.scripDataFileName = scripDataFileName;
     }
 
+    public String getScripMapFileName() {
+        return scripMapFileName;
+    }
+
+    public void setScripMapFileName(String scripMapFileName) {
+        this.scripMapFileName = scripMapFileName;
+    }
+    
+    
     public EndTime getEndTime() {
         return endTime;
     }

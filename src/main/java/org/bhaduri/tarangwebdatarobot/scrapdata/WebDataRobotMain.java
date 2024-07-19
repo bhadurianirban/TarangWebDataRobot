@@ -2,14 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  */
 
-package org.bhaduri.tarangwebdatarobot;
+package org.bhaduri.tarangwebdatarobot.scrapdata;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.bhaduri.tarangwebdatarobot.fileprep.SqlUploadFilePreparation;
 
 /**
  *
@@ -18,7 +13,7 @@ import java.util.logging.Logger;
 public class WebDataRobotMain {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        //System.out.println("Hello World!");
         //WebDataCollect wdc = new WebDataCollect();
         //wdc.collectData();
         String configFileName;
@@ -27,6 +22,8 @@ public class WebDataRobotMain {
         } else {
             configFileName = "/home/bhaduri/Documents/TarangDataCollectConfig.json";
         }
-        new WebDataRobot(configFileName).readConfigFile().collectData();
+        new WebDataRobotConfig(configFileName).readConfigFile();
+        //new WebDataCollect().collectData();
+        new SqlUploadFilePreparation().prepareFile();
     }
 }
