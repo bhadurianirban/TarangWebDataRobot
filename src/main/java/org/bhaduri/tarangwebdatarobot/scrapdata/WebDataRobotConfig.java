@@ -39,6 +39,7 @@ public class WebDataRobotConfig {
         ConfigValues.endTime = LocalTime.of(tarangConfig.getEndTime().getHour(), tarangConfig.getEndTime().getMinute(), tarangConfig.getEndTime().getSecond());
         ConfigValues.scripDataFileName = tarangConfig.getScripDataFileName();
         ConfigValues.scripMapFileName = tarangConfig.getScripMapFileName();
+        ConfigValues.sqlLoadDataFileName = tarangConfig.getSqlLoadDataFileName();
         
     }
 

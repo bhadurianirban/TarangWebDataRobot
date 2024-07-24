@@ -16,6 +16,7 @@ public class ConfigValues {
     public static String chromeDriverPath = null;
     public static String scripDataFileName = null;
     public static String scripMapFileName = null;
+    public static String sqlLoadDataFileName = null;
     public static LocalTime endTime = null;
 
 }

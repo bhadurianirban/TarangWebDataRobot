@@ -5,8 +5,10 @@
 package org.bhaduri.tarangwebdatarobot.fileprep;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
@@ -16,6 +18,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bhaduri.tarangwebdatarobot.config.ConfigValues;
+import org.bhaduri.tarangwebdatarobot.scrapdata.WebDataCollect;
 
 /**
  *
@@ -26,14 +29,15 @@ public class SqlUploadFilePreparation {
     Map<String, String> scripMap;
     String line;
     MinuteDataDTO minuteDataDTO;
+    BufferedReader br;
+    BufferedWriter bw;
 
     public void prepareFile() {
+        initInputOutputFiles();
         try {
-            BufferedReader br = new BufferedReader(new FileReader(ConfigValues.scripDataFileName));
             while ((line = br.readLine()) != null) {
-
                 prepareScripLine(line);
-                System.out.println(minuteDataDTO.getScripId()+" "+minuteDataDTO.getDayLastPrice()+" "+minuteDataDTO.getPreviousClosePrice()+" "+minuteDataDTO.getTradedVolume()+" "+minuteDataDTO.getCurrentTimeStamp());
+                writeSqlLoadData(minuteDataDTO);
             }
 
         } catch (FileNotFoundException ex) {
@@ -41,7 +45,8 @@ public class SqlUploadFilePreparation {
         } catch (IOException ex) {
             Logger.getLogger(SqlUploadFilePreparation.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //prepareScripLine("UltraTech Cem. 11659 -175.00,556047,2024-07-17 16:01:51.995");
+        closeFiles();
+        
 
     }
 
@@ -88,9 +93,9 @@ public class SqlUploadFilePreparation {
         Double scripDayChange = Double.valueOf(scripDayChangeStr);
         Double scripPreviousClosePrice = scripLtp - scripDayChange;
         
-        if (!tradedVolumeStr.matches("[0-9]")) {
-            tradedVolumeStr = "0";
-        }
+//        if (!tradedVolumeStr.matches("[0-9]")) {
+//            tradedVolumeStr = "0";
+//        }
 
         minuteDataDTO.setPreviousClosePrice(df.format(scripPreviousClosePrice));
         minuteDataDTO.setDayLastPrice(df.format(scripLtp));
@@ -120,5 +125,43 @@ public class SqlUploadFilePreparation {
         }
 
     }
-
+    
+    private void initInputOutputFiles() {
+        try {
+            br = new BufferedReader(new FileReader(ConfigValues.scripDataFileName));
+            bw = new BufferedWriter(new FileWriter(ConfigValues.sqlLoadDataFileName, false));
+            bw.write("scripid,lastupdateminute,openprice,daylastprice,dayhighprice,daylowprice,prevcloseprice,totaltradedvolume");
+            bw.newLine();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(SqlUploadFilePreparation.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(SqlUploadFilePreparation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void writeSqlLoadData (MinuteDataDTO minuteDataDTO) {
+       String outLine = minuteDataDTO.getScripId()+","
+               +minuteDataDTO.getCurrentTimeStamp()+","
+               +minuteDataDTO.getOpenPrice()+","
+               +minuteDataDTO.getDayLastPrice()+","
+               +minuteDataDTO.getDayHighPrice()+","
+               +minuteDataDTO.getDayLowPrice()+","
+               +minuteDataDTO.getPreviousClosePrice()+","
+               +minuteDataDTO.getTradedVolume();
+        try {
+            bw.write(outLine);
+            bw.newLine();
+        } catch (IOException ex) {
+            Logger.getLogger(SqlUploadFilePreparation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    private void closeFiles() {
+        try {
+            br.close();
+            bw.close();
+        } catch (IOException ex) {
+            Logger.getLogger(SqlUploadFilePreparation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
 }

@@ -13,6 +13,7 @@ public class TarangConfig {
     private String chromeDriverPath;
     private String scripDataFileName;
     private String scripMapFileName;
+    private String sqlLoadDataFileName;
     private EndTime endTime;
 
     public String getUrl() {
@@ -45,6 +46,14 @@ public class TarangConfig {
 
     public void setScripMapFileName(String scripMapFileName) {
         this.scripMapFileName = scripMapFileName;
+    }
+
+    public String getSqlLoadDataFileName() {
+        return sqlLoadDataFileName;
+    }
+
+    public void setSqlLoadDataFileName(String sqlLoadDataFileName) {
+        this.sqlLoadDataFileName = sqlLoadDataFileName;
     }
     
     

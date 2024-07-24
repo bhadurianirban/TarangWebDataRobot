@@ -11,6 +11,7 @@ package org.bhaduri.tarangwebdatarobot.fileprep;
 public class MinuteDataDTO {
     private String scripId;
     private String currentTimeStamp;
+    private String openPrice;
     private String dayLastPrice;
     private String dayHighPrice;
     private String dayLowPrice;
@@ -18,8 +19,17 @@ public class MinuteDataDTO {
     private String tradedVolume;
 
     public MinuteDataDTO() {
-        
+        this.scripId = "0";
+        this.currentTimeStamp = "0";
+        this.openPrice = "0";
+        this.dayLastPrice = "0";
+        this.dayHighPrice = "0";
+        this.dayLowPrice = "0";
+        this.previousClosePrice = "0";
+        this.tradedVolume = "0";
     }
+
+    
 
     public String getScripId() {
         return scripId;
@@ -35,6 +45,14 @@ public class MinuteDataDTO {
 
     public void setCurrentTimeStamp(String currentTimeStamp) {
         this.currentTimeStamp = currentTimeStamp;
+    }
+
+    public String getOpenPrice() {
+        return openPrice;
+    }
+
+    public void setOpenPrice(String openPrice) {
+        this.openPrice = openPrice;
     }
 
     public String getDayLastPrice() {
