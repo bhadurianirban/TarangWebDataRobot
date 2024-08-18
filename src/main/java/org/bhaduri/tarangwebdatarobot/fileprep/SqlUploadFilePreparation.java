@@ -13,12 +13,10 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.logging.log4j.LogManager;
 import org.bhaduri.tarangwebdatarobot.config.ConfigValues;
-import org.bhaduri.tarangwebdatarobot.scrapdata.WebDataCollect;
 
 /**
  *
@@ -41,13 +39,25 @@ public class SqlUploadFilePreparation {
             }
 
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(SqlUploadFilePreparation.class.getName()).log(Level.SEVERE, null, ex);
+            LogManager.getLogger(SqlUploadFilePreparation.class.getName()).fatal("Cannot find temporary scrapped file", ex);
         } catch (IOException ex) {
-            Logger.getLogger(SqlUploadFilePreparation.class.getName()).log(Level.SEVERE, null, ex);
+            LogManager.getLogger(SqlUploadFilePreparation.class.getName()).fatal("Cannot read temporary scrapped file", ex);
         }
         closeFiles();
-        
 
+    }
+
+    private void initInputOutputFiles() {
+        try {
+            br = new BufferedReader(new FileReader(ConfigValues.scripDataFileName));
+            bw = new BufferedWriter(new FileWriter(ConfigValues.sqlLoadDataFileName, false));
+            bw.write("scripid,lastupdateminute,openprice,daylastprice,dayhighprice,daylowprice,prevcloseprice,totaltradedvolume");
+            bw.newLine();
+        } catch (FileNotFoundException ex) {
+            LogManager.getLogger(SqlUploadFilePreparation.class.getName()).fatal("Cannot find temporary scrapped file or SQL Uploadfile", ex);
+        } catch (IOException ex) {
+            LogManager.getLogger(SqlUploadFilePreparation.class.getName()).fatal("Cannot read/write temporary scrapped file or SQL Uploadfile", ex);
+        }
     }
 
     private void prepareScripLine(String scripLine) {
@@ -65,7 +75,7 @@ public class SqlUploadFilePreparation {
         String scripId;
         String scripLtpStr;
         String scripDayChangeStr;
-        
+
         readScripCSV();
 
         if (line.startsWith("NIF")) {
@@ -92,20 +102,17 @@ public class SqlUploadFilePreparation {
         Double scripLtp = Double.valueOf(scripLtpStr);
         Double scripDayChange = Double.valueOf(scripDayChangeStr);
         Double scripPreviousClosePrice = scripLtp - scripDayChange;
-        
+
 //        if (!tradedVolumeStr.matches("[0-9]")) {
 //            tradedVolumeStr = "0";
 //        }
-
         minuteDataDTO.setPreviousClosePrice(df.format(scripPreviousClosePrice));
         minuteDataDTO.setDayLastPrice(df.format(scripLtp));
         minuteDataDTO.setTradedVolume(tradedVolumeStr);
         minuteDataDTO.setCurrentTimeStamp(currentTimeStamp);
 
-        
-        
         minuteDataDTO.setScripId(scripId);
-        
+
     }
 
     private void readScripCSV() {
@@ -119,49 +126,37 @@ public class SqlUploadFilePreparation {
             }
 
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(SqlUploadFilePreparation.class.getName()).log(Level.SEVERE, null, ex);
+            LogManager.getLogger(SqlUploadFilePreparation.class.getName()).fatal("Cannot find Scrip Mapping File", ex);
         } catch (IOException ex) {
-            Logger.getLogger(SqlUploadFilePreparation.class.getName()).log(Level.SEVERE, null, ex);
+            LogManager.getLogger(SqlUploadFilePreparation.class.getName()).fatal("Cannot read Scrip Mapping File", ex);
         }
 
     }
-    
-    private void initInputOutputFiles() {
-        try {
-            br = new BufferedReader(new FileReader(ConfigValues.scripDataFileName));
-            bw = new BufferedWriter(new FileWriter(ConfigValues.sqlLoadDataFileName, false));
-            bw.write("scripid,lastupdateminute,openprice,daylastprice,dayhighprice,daylowprice,prevcloseprice,totaltradedvolume");
-            bw.newLine();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(SqlUploadFilePreparation.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(SqlUploadFilePreparation.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    
-    private void writeSqlLoadData (MinuteDataDTO minuteDataDTO) {
-       String outLine = minuteDataDTO.getScripId()+","
-               +minuteDataDTO.getCurrentTimeStamp()+","
-               +minuteDataDTO.getOpenPrice()+","
-               +minuteDataDTO.getDayLastPrice()+","
-               +minuteDataDTO.getDayHighPrice()+","
-               +minuteDataDTO.getDayLowPrice()+","
-               +minuteDataDTO.getPreviousClosePrice()+","
-               +minuteDataDTO.getTradedVolume();
+
+    private void writeSqlLoadData(MinuteDataDTO minuteDataDTO) {
+        String outLine = minuteDataDTO.getScripId() + ","
+                + minuteDataDTO.getCurrentTimeStamp() + ","
+                + minuteDataDTO.getOpenPrice() + ","
+                + minuteDataDTO.getDayLastPrice() + ","
+                + minuteDataDTO.getDayHighPrice() + ","
+                + minuteDataDTO.getDayLowPrice() + ","
+                + minuteDataDTO.getPreviousClosePrice() + ","
+                + minuteDataDTO.getTradedVolume();
         try {
             bw.write(outLine);
             bw.newLine();
         } catch (IOException ex) {
-            Logger.getLogger(SqlUploadFilePreparation.class.getName()).log(Level.SEVERE, null, ex);
+            LogManager.getLogger(SqlUploadFilePreparation.class.getName()).fatal("Cannot write to SQL Upload File", ex);
         }
     }
+
     private void closeFiles() {
         try {
             br.close();
             bw.close();
         } catch (IOException ex) {
-            Logger.getLogger(SqlUploadFilePreparation.class.getName()).log(Level.SEVERE, null, ex);
+            LogManager.getLogger(SqlUploadFilePreparation.class.getName()).fatal("Cannot close to SQL Upload File/Scrapped file", ex);
         }
-        
+
     }
 }

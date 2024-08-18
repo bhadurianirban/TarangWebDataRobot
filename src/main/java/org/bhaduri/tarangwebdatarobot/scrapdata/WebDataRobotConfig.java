@@ -9,8 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalTime;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bhaduri.tarangwebdatarobot.config.ConfigValues;
 
 /**
@@ -32,7 +31,7 @@ public class WebDataRobotConfig {
             tarangConfig = new ObjectMapper().readValue(configJson, TarangConfig.class);
 
         } catch (IOException ex) {
-            Logger.getLogger(WebDataRobotMain.class.getName()).log(Level.SEVERE, null, ex);
+            LogManager.getLogger(WebDataRobotConfig.class.getName()).fatal("Cannot read and map config file",ex);
         }
         ConfigValues.url = tarangConfig.getUrl();
         ConfigValues.chromeDriverPath = tarangConfig.getChromeDriverPath();

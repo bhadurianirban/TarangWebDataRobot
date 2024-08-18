@@ -18,5 +18,6 @@ public class ConfigValues {
     public static String scripMapFileName = null;
     public static String sqlLoadDataFileName = null;
     public static LocalTime endTime = null;
+    public static String configFileName = null;
 
 }
