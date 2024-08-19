@@ -3,6 +3,7 @@
  */
 package org.bhaduri.tarangwebdatarobot.scrapdata;
 
+import org.apache.logging.log4j.LogManager;
 import org.bhaduri.tarangwebdatarobot.config.ConfigValues;
 import org.bhaduri.tarangwebdatarobot.exceptions.TarangUncaughatException;
 import org.bhaduri.tarangwebdatarobot.fileprep.SqlUploadFilePreparation;
@@ -18,11 +19,9 @@ public class WebDataRobotMain {
     
     public static void main(String[] args) {
         Thread.setDefaultUncaughtExceptionHandler(new TarangUncaughatException());
-        //System.out.println("Hello World!");
-        //WebDataCollect wdc = new WebDataCollect();
-        //wdc.collectData();
         
-
+        //System.out.println("Hello");
+        //LogManager.getLogger(WebDataRobotMain.class.getName()).info("Something is right");
         decideFunctionMode(args);
         if (RUN_MODE == WEB_SCRAP) {
             new WebDataRobotConfig(ConfigValues.configFileName).readConfigFile();

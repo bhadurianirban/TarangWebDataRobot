@@ -31,6 +31,7 @@ public class SqlUploadFilePreparation {
     BufferedWriter bw;
 
     public void prepareFile() {
+        LogManager.getLogger(SqlUploadFilePreparation.class.getName()).info("File write initiated");
         initInputOutputFiles();
         try {
             while ((line = br.readLine()) != null) {

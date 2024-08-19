@@ -5,13 +5,13 @@
             <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level - %msg%n"/>
         </Console>
         <RollingFile name="RollingFile" append="true" fileName="/tmp/tarang.log" 
-                         filePattern="/tmp/$${date:yyyy-MM}/app-%d{MM-dd-yyyy-HH:mm:ss}-%i.log.gz">
+                         filePattern="/tmp/$${date:yyyy-MM}/tarang-%d{MM-dd-yyyy-HH:mm:ss}-%i.log.gz">
             <PatternLayout>
                 <Pattern>%d %p [%t] %c %m%n</Pattern>
             </PatternLayout>
             <Policies>
                 <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="1 KB"/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
             </Policies>
         </RollingFile>
     </Appenders>
@@ -19,7 +19,7 @@
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
-        <Logger name="org.bhaduri.log4jtest" level="info" additivity="true">
+        <Logger name="org.bhaduri.tarangwebdatarobot" level="info" additivity="true">
             <AppenderRef ref="RollingFile"/>
         </Logger>
     </Loggers>

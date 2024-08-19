@@ -58,6 +58,7 @@ public class WebDataCollect {
         }
 
         driver.close();
+        driver.quit();
         closeOutFile();
     }
 
@@ -70,16 +71,16 @@ public class WebDataCollect {
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         driver.get(ConfigValues.url);
     }
-    
+
     private void initOutFile() {
         try {
             scripDataFile = new BufferedWriter(new FileWriter(ConfigValues.scripDataFileName, true));
         } catch (IOException ex) {
             LogManager.getLogger(WebDataCollect.class.getName()).fatal("Error writing temporary scrap file", ex);
         }
-    }    
+    }
 
-        /**
+    /**
      * sort by column header to list the company names alphabetically This is
      * because by default the list is sorted by LTP and that may be the reason
      * for the scrips listed in pages to change.
@@ -95,28 +96,7 @@ public class WebDataCollect {
                 System.out.println("Scrips sorted");
             }
         } catch (NoSuchElementException ex) {
-            LogManager.getLogger(WebDataCollect.class.getName()).fatal("Sort butting not found in page", ex);
-        }
-    }
-    private void resetScripValuesBuffer() {
-        scripValuesBuffer = new ArrayList<>();
-    }
-
-
-
-
-
-    private void writeScripValuesBufferToOutFile() {
-        try {
-            for (int i = 0; i < scripValuesBuffer.size(); i++) {
-                //System.out.println("writing.."+scripValuesBuffer.get(i));
-                scripDataFile.write(scripValuesBuffer.get(i));
-                scripDataFile.newLine();
-            }
-            scripDataFile.flush();
-
-        } catch (IOException ex) {
-            LogManager.getLogger(WebDataCollect.class.getName()).fatal("Error writing temporary scrap file", ex);
+            LogManager.getLogger(WebDataCollect.class.getName()).fatal("Sort button not found in page", ex);
         }
     }
 
@@ -126,7 +106,9 @@ public class WebDataCollect {
         currentTimeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(timeStamp);
     }
 
-
+    private void resetScripValuesBuffer() {
+        scripValuesBuffer = new ArrayList<>();
+    }
 
     private void getNiftyValue() {
         /*get the nifty 50 price.*/
@@ -135,6 +117,8 @@ public class WebDataCollect {
         String niftyValue = niftyValueElement.getText().replaceAll("\\n", " ").replaceAll("\\₹|\\,", "");
         scripValuesBuffer.add("NIFTY50 " + niftyValue + ",0," + currentTimeStamp);
     }
+
+
 
     /**
      * Get scrip ltp values for a pagecount in pagination
@@ -180,6 +164,22 @@ public class WebDataCollect {
 
     }
 
+    private void writeScripValuesBufferToOutFile() {
+        try {
+            for (int i = 0; i < scripValuesBuffer.size(); i++) {
+                //System.out.println("writing.."+scripValuesBuffer.get(i));
+                scripDataFile.write(scripValuesBuffer.get(i));
+                scripDataFile.newLine();
+                
+            }
+            scripDataFile.flush();
+
+        } catch (IOException ex) {
+            LogManager.getLogger(WebDataCollect.class.getName()).fatal("Error writing temporary scrap file", ex);
+        }
+        LogManager.getLogger(WebDataCollect.class.getName()).info("Scrapped for time "+currentTimeStamp);
+    }    
+
     private void sleepForSeconds(int sleepSeconds) {
         try {
             Thread.sleep(Duration.ofSeconds(sleepSeconds));
@@ -187,13 +187,13 @@ public class WebDataCollect {
             LogManager.getLogger(WebDataCollect.class.getName()).fatal("Cannot sleep - Thread Sleep", ex);
         }
     }
-    
+
     private void closeOutFile() {
         try {
             scripDataFile.close();
         } catch (IOException ex) {
             LogManager.getLogger(WebDataCollect.class.getName()).fatal("Error closing temporary scrap file", ex);
         }
-    }    
+    }
 
 }
