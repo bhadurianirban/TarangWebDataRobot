@@ -54,7 +54,7 @@ public class WebDataCollect {
             writeScripValuesBufferToOutFile();
             sleepForSeconds(5);
             getCurrentTimeStamp();
-
+            
         }
 
         driver.close();

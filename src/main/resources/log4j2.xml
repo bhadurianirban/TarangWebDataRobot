@@ -19,7 +19,7 @@
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
-        <Logger name="org.bhaduri.tarangwebdatarobot" level="info" additivity="true">
+        <Logger name="org.bhaduri" level="info" additivity="true">
             <AppenderRef ref="RollingFile"/>
         </Logger>
     </Loggers>

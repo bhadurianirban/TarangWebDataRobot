@@ -13,15 +13,13 @@ import org.bhaduri.tarangwebdatarobot.fileprep.SqlUploadFilePreparation;
  * @author bhaduri
  */
 public class WebDataRobotMain {
-    public static int RUN_MODE=0;
+    public static int RUN_MODE = 0;
     public static final int WEB_SCRAP = 1;
     public static final int SQL_FILE_PREP = 2;
-    
+
     public static void main(String[] args) {
         Thread.setDefaultUncaughtExceptionHandler(new TarangUncaughatException());
-        
-        //System.out.println("Hello");
-        //LogManager.getLogger(WebDataRobotMain.class.getName()).info("Something is right");
+
         decideFunctionMode(args);
         if (RUN_MODE == WEB_SCRAP) {
             new WebDataRobotConfig(ConfigValues.configFileName).readConfigFile();
@@ -56,7 +54,7 @@ public class WebDataRobotMain {
                     ConfigValues.configFileName = args[1];
                 } else {
                     System.out.println("Syntax: --runmode[WS|SQLUP] configfilename");
-                }   
+                }
             }
             default -> {
                 System.out.println("Need to provide config file name and run mode");
