@@ -5,6 +5,7 @@
 package org.bhaduri.tarangwebdatarobot.exceptions;
 
 import org.apache.logging.log4j.LogManager;
+import org.bhaduri.tarangwebdatarobot.scrapdata.WebDataCollectTask;
 
 /**
  *
@@ -15,6 +16,9 @@ public class TarangUncaughatException implements Thread.UncaughtExceptionHandler
     @Override
     public void uncaughtException(Thread t, Throwable e) {
         LogManager.getLogger(TarangUncaughatException.class.getName()).fatal("Uncaught Exception",e);
+        LogManager.getLogger(TarangUncaughatException.class.getName()).info("WebDataCollectTask Thread status: %s\n", t.getState());
+        LogManager.getLogger(TarangUncaughatException.class.getName()).info("Restarting WebDataCollectTask Thread");
+        new Thread(new WebDataCollectTask()).start();
     }
     
 }

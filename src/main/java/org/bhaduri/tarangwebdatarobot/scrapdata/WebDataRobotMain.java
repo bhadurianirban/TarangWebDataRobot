@@ -13,6 +13,7 @@ import org.bhaduri.tarangwebdatarobot.fileprep.SqlUploadFilePreparation;
  * @author bhaduri
  */
 public class WebDataRobotMain {
+
     public static int RUN_MODE = 0;
     public static final int WEB_SCRAP = 1;
     public static final int SQL_FILE_PREP = 2;
@@ -23,7 +24,8 @@ public class WebDataRobotMain {
         decideFunctionMode(args);
         if (RUN_MODE == WEB_SCRAP) {
             new WebDataRobotConfig(ConfigValues.configFileName).readConfigFile();
-            new WebDataCollect().collectData();
+            LogManager.getLogger(WebDataRobotMain.class.getName()).info("Starting Thread for webdata collect");
+            new Thread(new WebDataCollectTask()).start();
         }
         if (RUN_MODE == SQL_FILE_PREP) {
             new WebDataRobotConfig(ConfigValues.configFileName).readConfigFile();
