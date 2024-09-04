@@ -52,9 +52,9 @@ public class WebDataCollect {
             getScripDataByPage(3);
             getScripDataByPage(4);
             writeScripValuesBufferToOutFile();
-            sleepForSeconds(5);
+//            sleepForSeconds(10);
             getCurrentTimeStamp();
-            
+
         }
 
         driver.close();
@@ -63,6 +63,7 @@ public class WebDataCollect {
     }
 
     private void initChromeDriver() {
+        LogManager.getLogger(WebDataCollect.class.getName()).info("Chrome driver path " + ConfigValues.chromeDriverPath);
         System.setProperty("webdriver.chrome.driver", ConfigValues.chromeDriverPath);
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--headless");
@@ -118,8 +119,6 @@ public class WebDataCollect {
         scripValuesBuffer.add("NIFTY50 " + niftyValue + ",0," + currentTimeStamp);
     }
 
-
-
     /**
      * Get scrip ltp values for a pagecount in pagination
      *
@@ -149,36 +148,33 @@ public class WebDataCollect {
         }
 
         /*now read the scrip values*/
-        while (true) {
-            List<WebElement> scripLtpValueElements = driver.findElements(By.xpath("//*[@id='table']/div[1]/table/tbody/tr"));
-            List<WebElement> scripVolValueElements = driver.findElements(By.xpath("//*[@id='scrollableTable']/table/tbody/tr[*]/td[8]"));
-            if (scripLtpValueElements.size() == scripVolValueElements.size()) {
-                List<String> scripLtpValues = scripLtpValueElements.stream().map(x -> x.getText().replaceAll("[\\t\\n\\r]+", " ").replaceAll(",", "")).collect(Collectors.toList());
-                List<String> scripVolValues = scripVolValueElements.stream().map(x -> x.getText().replaceAll(",", "")).collect(Collectors.toList());
-                for (int i = 0; i < scripLtpValues.size(); i++) {
-                    scripValuesBuffer.add(scripLtpValues.get(i) + "," + scripVolValues.get(i) + "," + currentTimeStamp);
-                }
-                break;
+        sleepForSeconds(5);
+        List<WebElement> scripLtpValueElements = driver.findElements(By.xpath("//*[@id='table']/div[1]/table/tbody/tr"));
+        List<WebElement> scripVolValueElements = driver.findElements(By.xpath("//*[@id='scrollableTable']/table/tbody/tr[*]/td[8]"));
+        if (scripLtpValueElements.size() == scripVolValueElements.size()) {
+            List<String> scripLtpValues = scripLtpValueElements.stream().map(x -> x.getText().replaceAll("[\\t\\n\\r]+", " ").replaceAll(",", "")).collect(Collectors.toList());
+            List<String> scripVolValues = scripVolValueElements.stream().map(x -> x.getText().replaceAll(",", "")).collect(Collectors.toList());
+            for (int i = 0; i < scripLtpValues.size(); i++) {
+                scripValuesBuffer.add(scripLtpValues.get(i) + "," + scripVolValues.get(i) + "," + currentTimeStamp);
             }
         }
-
     }
 
     private void writeScripValuesBufferToOutFile() {
         try {
             for (int i = 0; i < scripValuesBuffer.size(); i++) {
-                //System.out.println("writing.."+scripValuesBuffer.get(i));
+//                System.out.println("writing.."+scripValuesBuffer.get(i));
                 scripDataFile.write(scripValuesBuffer.get(i));
                 scripDataFile.newLine();
-                
+
             }
             scripDataFile.flush();
 
         } catch (IOException ex) {
             LogManager.getLogger(WebDataCollect.class.getName()).fatal("Error writing temporary scrap file", ex);
         }
-        LogManager.getLogger(WebDataCollect.class.getName()).info("Scrapped for time "+currentTimeStamp);
-    }    
+        LogManager.getLogger(WebDataCollect.class.getName()).info("Scrapped for time " + currentTimeStamp);
+    }
 
     private void sleepForSeconds(int sleepSeconds) {
         try {
