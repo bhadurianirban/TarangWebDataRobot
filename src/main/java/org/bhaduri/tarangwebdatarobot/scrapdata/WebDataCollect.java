@@ -48,9 +48,9 @@ public class WebDataCollect {
             resetScripValuesBuffer();
             getNiftyValue();
             getScripDataByPage(1);
-            getScripDataByPage(2);
-            getScripDataByPage(3);
-            getScripDataByPage(4);
+//            getScripDataByPage(2);
+//            getScripDataByPage(3);
+//            getScripDataByPage(4);
             writeScripValuesBufferToOutFile();
 //            sleepForSeconds(10);
             getCurrentTimeStamp();
@@ -87,12 +87,15 @@ public class WebDataCollect {
      * for the scrips listed in pages to change.
      */
     private void sortByScripId() {
+        System.out.println("Scrips sorting");
         WebElement sortColumnHeader = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='thead']/tr/th[1]/div/div")));
         sortColumnHeader.click();
-
+        System.out.println("Scrips sorted");
+        sleepForSeconds(5);
         /*waiting this the next button on the page is clickable which means the full page is loaded*/
         try {
-            WebElement activePaginationButton = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("li.MarketTable_pageList__82ska.MarketTable_active__2sHad")));
+            WebElement activePaginationButton = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#slider-otherindices > div > div > div.slick-dots > div > div.custom-slick-dots.undefined > ul > li.slick-active > button")));
+            System.out.println("text got "+activePaginationButton.getText());
             if (activePaginationButton.getText().equals("1")) {
                 System.out.println("Scrips sorted");
             }
@@ -125,30 +128,30 @@ public class WebDataCollect {
      * @param pageCount page number in pagination
      */
     private void getScripDataByPage(int pageCount) {
-        int paginationButtonCounter = pageCount + 1;
+//        int paginationButtonCounter = pageCount + 1;
         /*click the active pagination button on the page*/
-        try {
-            WebElement paginationFirstButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='MarketTable_tablePagination__MhVJq']/ul/li[" + paginationButtonCounter + "]")));
-            paginationFirstButton.click();
-        } catch (NoSuchElementException ex) {
-            LogManager.getLogger(WebDataCollect.class.getName()).fatal("Active pagination button not found in page", ex);
-        }
+//        try {
+//            WebElement paginationFirstButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='MarketTable_tablePagination__MhVJq']/ul/li[" + paginationButtonCounter + "]")));
+//            paginationFirstButton.click();
+//        } catch (NoSuchElementException ex) {
+//            LogManager.getLogger(WebDataCollect.class.getName()).fatal("Active pagination button not found in page", ex);
+//        }
 
         /*after clicking the pageCount page wait for pageCount number button to become active */
-        try {
-            while (true) {
-                WebElement activePaginationButton = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("li.MarketTable_pageList__82ska.MarketTable_active__2sHad")));
-                if (activePaginationButton.getText().equals(Integer.toString(pageCount))) {
-                    //System.out.println("Scrip List page " + activePaginationButton.getText() + " activated.");
-                    break;
-                }
-            }
-        } catch (NoSuchElementException ex) {
-            LogManager.getLogger(WebDataCollect.class.getName()).fatal("Pagination button is not active", ex);
-        }
+//        try {
+//            while (true) {
+//                WebElement activePaginationButton = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("li.MarketTable_pageList__82ska.MarketTable_active__2sHad")));
+//                if (activePaginationButton.getText().equals(Integer.toString(pageCount))) {
+//                    //System.out.println("Scrip List page " + activePaginationButton.getText() + " activated.");
+//                    break;
+//                }
+//            }
+//        } catch (NoSuchElementException ex) {
+//            LogManager.getLogger(WebDataCollect.class.getName()).fatal("Pagination button is not active", ex);
+//        }
 
         /*now read the scrip values*/
-        sleepForSeconds(5);
+        sleepForSeconds(17);
         List<WebElement> scripLtpValueElements = driver.findElements(By.xpath("//*[@id='table']/div[1]/table/tbody/tr"));
         List<WebElement> scripVolValueElements = driver.findElements(By.xpath("//*[@id='scrollableTable']/table/tbody/tr[*]/td[8]"));
         if (scripLtpValueElements.size() == scripVolValueElements.size()) {
