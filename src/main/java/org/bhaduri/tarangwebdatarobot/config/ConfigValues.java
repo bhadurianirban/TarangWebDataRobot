@@ -5,6 +5,7 @@
 package org.bhaduri.tarangwebdatarobot.config;
 
 import java.time.LocalTime;
+import org.openqa.selenium.chrome.ChromeDriver;
 
 /**
  *
@@ -19,5 +20,6 @@ public class ConfigValues {
     public static String sqlLoadDataFileName = null;
     public static LocalTime endTime = null;
     public static String configFileName = null;
+    public static ChromeDriver driver;
 
 }

@@ -32,11 +32,13 @@ public class SqlUploadFilePreparation {
 
     public void prepareFile() {
         LogManager.getLogger(SqlUploadFilePreparation.class.getName()).info("File write initiated");
+        int lineCount = 0;
         initInputOutputFiles();
         try {
             while ((line = br.readLine()) != null) {
                 prepareScripLine(line);
                 writeSqlLoadData(minuteDataDTO);
+                lineCount++;
             }
 
         } catch (FileNotFoundException ex) {
@@ -44,6 +46,7 @@ public class SqlUploadFilePreparation {
         } catch (IOException ex) {
             LogManager.getLogger(SqlUploadFilePreparation.class.getName()).fatal("Cannot read temporary scrapped file", ex);
         }
+        LogManager.getLogger(SqlUploadFilePreparation.class.getName()).info("File write completed. "+lineCount+" records written.");
         closeFiles();
 
     }
@@ -75,16 +78,33 @@ public class SqlUploadFilePreparation {
 
         String scripId;
         String scripLtpStr;
-        String scripDayChangeStr;
+        
 
         readScripCSV();
 
         if (line.startsWith("NIF")) {
+            //for nifty value do the calculation
+            String scripDayChangeStr;
             String scripNameAndLtpNifty = scripNameAndLtp.split("\\(")[0].trim();
             scripId = "NIFTY 50";
             scripLtpStr = scripNameAndLtpNifty.split(" ")[1].trim();
             scripDayChangeStr = scripNameAndLtpNifty.split(" ")[2].trim();
+            if (scripDayChangeStr.equals("-")) {
+                scripDayChangeStr = "0";
+            }
+            DecimalFormat df = new DecimalFormat("#.##");
+            Double scripLtp = Double.valueOf(scripLtpStr);
+            Double scripDayChangePercentage = Double.valueOf(scripDayChangeStr);
+            Double scripPreviousClosePrice = scripLtp - scripDayChangePercentage;
+            //Double scripPreviousClosePrice = scripLtp / (1 + (scripDayChangePercentage / 100));
+            minuteDataDTO.setPreviousClosePrice(df.format(scripPreviousClosePrice));
+            minuteDataDTO.setDayLastPrice(df.format(scripLtp));
+            minuteDataDTO.setTradedVolume(tradedVolumeStr);
+            minuteDataDTO.setCurrentTimeStamp(currentTimeStamp);
+            minuteDataDTO.setScripId(scripId);
         } else {
+            //for all other scrip value do the calculation
+            String scripDayChangeStrPercentage;
             String[] scripNameLtp = scripNameAndLtp.split("[0-9]");
             String scripName = scripNameLtp[0].trim();
             scripId = scripMap.get(scripName);
@@ -94,26 +114,25 @@ public class SqlUploadFilePreparation {
             m.find();
             scripLtpStr = m.group(0);
             m.find();
-            scripDayChangeStr = m.group(0);
+            scripDayChangeStrPercentage = m.group(0);
+            if (scripDayChangeStrPercentage.equals("-")) {
+                scripDayChangeStrPercentage = "0";
+            }
+            DecimalFormat df = new DecimalFormat("#.##");
+            Double scripLtp = Double.valueOf(scripLtpStr);
+            Double scripDayChangePercentage = Double.valueOf(scripDayChangeStrPercentage);
+            //Double scripPreviousClosePrice = scripLtp - scripDayChangePercentage;
+            Double scripPreviousClosePrice = scripLtp / (1 + (scripDayChangePercentage / 100));
+            minuteDataDTO.setPreviousClosePrice(df.format(scripPreviousClosePrice));
+            minuteDataDTO.setDayLastPrice(df.format(scripLtp));
+            minuteDataDTO.setTradedVolume(tradedVolumeStr);
+            minuteDataDTO.setCurrentTimeStamp(currentTimeStamp);
+            minuteDataDTO.setScripId(scripId);
         }
-        if (scripDayChangeStr.equals("-")) {
-            scripDayChangeStr = "0";
-        }
-        DecimalFormat df = new DecimalFormat("#.##");
-        Double scripLtp = Double.valueOf(scripLtpStr);
-        Double scripDayChange = Double.valueOf(scripDayChangeStr);
-        Double scripPreviousClosePrice = scripLtp - scripDayChange;
 
 //        if (!tradedVolumeStr.matches("[0-9]")) {
 //            tradedVolumeStr = "0";
 //        }
-        minuteDataDTO.setPreviousClosePrice(df.format(scripPreviousClosePrice));
-        minuteDataDTO.setDayLastPrice(df.format(scripLtp));
-        minuteDataDTO.setTradedVolume(tradedVolumeStr);
-        minuteDataDTO.setCurrentTimeStamp(currentTimeStamp);
-
-        minuteDataDTO.setScripId(scripId);
-
     }
 
     private void readScripCSV() {
@@ -146,6 +165,7 @@ public class SqlUploadFilePreparation {
         try {
             bw.write(outLine);
             bw.newLine();
+            bw.flush();
         } catch (IOException ex) {
             LogManager.getLogger(SqlUploadFilePreparation.class.getName()).fatal("Cannot write to SQL Upload File", ex);
         }

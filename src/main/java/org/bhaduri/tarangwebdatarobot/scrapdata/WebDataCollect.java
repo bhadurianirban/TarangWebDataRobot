@@ -31,7 +31,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class WebDataCollect {
 
     private BufferedWriter scripDataFile;
-    private ChromeDriver driver;
+    //private ChromeDriver driver;
     private WebDriverWait wait;
     private String currentTimeStamp;
     private LocalTime currentTime;
@@ -41,10 +41,11 @@ public class WebDataCollect {
 
         initChromeDriver();
         initOutFile();
-        sortByScripId();
+        
         getCurrentTimeStamp();
 
         while (currentTime.isBefore(ConfigValues.endTime)) {
+            sortByScripId();
             resetScripValuesBuffer();
             getNiftyValue();
             getScripDataByPage(1);
@@ -57,8 +58,8 @@ public class WebDataCollect {
 
         }
 
-        driver.close();
-        driver.quit();
+        ConfigValues.driver.close();
+        ConfigValues.driver.quit();
         closeOutFile();
     }
 
@@ -68,14 +69,15 @@ public class WebDataCollect {
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--headless");
         chromeOptions.addArguments("--no-sandbox");
-        driver = new ChromeDriver(chromeOptions);
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        driver.get(ConfigValues.url);
+        ConfigValues.driver = new ChromeDriver(chromeOptions);
+        wait = new WebDriverWait(ConfigValues.driver, Duration.ofSeconds(10));
+        ConfigValues.driver.get(ConfigValues.url);
     }
 
     private void initOutFile() {
         try {
             scripDataFile = new BufferedWriter(new FileWriter(ConfigValues.scripDataFileName, true));
+            LogManager.getLogger(WebDataCollect.class.getName()).info("Output file "+ConfigValues.scripDataFileName+" initiated.");
         } catch (IOException ex) {
             LogManager.getLogger(WebDataCollect.class.getName()).fatal("Error writing temporary scrap file", ex);
         }
@@ -87,17 +89,17 @@ public class WebDataCollect {
      * for the scrips listed in pages to change.
      */
     private void sortByScripId() {
-        System.out.println("Scrips sorting");
+        //LogManager.getLogger(WebDataCollect.class.getName()).info("Sorting Scrips ");
         WebElement sortColumnHeader = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='thead']/tr/th[1]/div/div")));
         sortColumnHeader.click();
-        System.out.println("Scrips sorted");
+        //LogManager.getLogger(WebDataCollect.class.getName()).info("Sort scrips Clicked");
         sleepForSeconds(5);
         /*waiting this the next button on the page is clickable which means the full page is loaded*/
         try {
             WebElement activePaginationButton = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#slider-otherindices > div > div > div.slick-dots > div > div.custom-slick-dots.undefined > ul > li.slick-active > button")));
-            System.out.println("text got "+activePaginationButton.getText());
-            if (activePaginationButton.getText().equals("1")) {
-                System.out.println("Scrips sorted");
+            //LogManager.getLogger(WebDataCollect.class.getName()).info("text got "+activePaginationButton.getText());
+            if (!activePaginationButton.getText().equals("1")) {
+                LogManager.getLogger(WebDataCollect.class.getName()).info("Scrips Sorted but page not active");
             }
         } catch (NoSuchElementException ex) {
             LogManager.getLogger(WebDataCollect.class.getName()).fatal("Sort button not found in page", ex);
@@ -116,10 +118,12 @@ public class WebDataCollect {
 
     private void getNiftyValue() {
         /*get the nifty 50 price.*/
-        WebElement niftyValueElement = driver.findElement(By.xpath("//*[@id='overview']/div[2]"));
-        //List<String> niftyValues = niftyValueElement.stream().map(x -> x.getText().replaceAll("\\n", " ").replaceAll("\\₹|\\,","" )).collect(Collectors.toList());
+        WebElement niftyValueElement = ConfigValues.driver.findElement(By.xpath("//*[@id='overview']/div[2]"));
+        //List<String> niftyValues = niftyValueElement.stream().map(x -> x.getText().replaceAll("\\n", " ").replaceAll("\\₹|\\,","" )).collect(Collectors.toList());   
         String niftyValue = niftyValueElement.getText().replaceAll("\\n", " ").replaceAll("\\₹|\\,", "");
-        scripValuesBuffer.add("NIFTY50 " + niftyValue + ",0," + currentTimeStamp);
+        String niftyValueTxt = "NIFTY50 " + niftyValue + ",0," + currentTimeStamp;
+        //LogManager.getLogger(WebDataCollect.class.getName()).info(niftyValueTxt);
+        scripValuesBuffer.add(niftyValueTxt);
     }
 
     /**
@@ -151,9 +155,9 @@ public class WebDataCollect {
 //        }
 
         /*now read the scrip values*/
-        sleepForSeconds(17);
-        List<WebElement> scripLtpValueElements = driver.findElements(By.xpath("//*[@id='table']/div[1]/table/tbody/tr"));
-        List<WebElement> scripVolValueElements = driver.findElements(By.xpath("//*[@id='scrollableTable']/table/tbody/tr[*]/td[8]"));
+        sleepForSeconds(15);
+        List<WebElement> scripLtpValueElements = ConfigValues.driver.findElements(By.xpath("//*[@id='table']/div[1]/table/tbody/tr"));
+        List<WebElement> scripVolValueElements = ConfigValues.driver.findElements(By.xpath("//*[@id='scrollableTable']/table/tbody/tr[*]/td[12]"));
         if (scripLtpValueElements.size() == scripVolValueElements.size()) {
             List<String> scripLtpValues = scripLtpValueElements.stream().map(x -> x.getText().replaceAll("[\\t\\n\\r]+", " ").replaceAll(",", "")).collect(Collectors.toList());
             List<String> scripVolValues = scripVolValueElements.stream().map(x -> x.getText().replaceAll(",", "")).collect(Collectors.toList());
