@@ -70,7 +70,7 @@ public class WebDataCollect {
         chromeOptions.addArguments("--headless");
         chromeOptions.addArguments("--no-sandbox");
         ConfigValues.driver = new ChromeDriver(chromeOptions);
-        wait = new WebDriverWait(ConfigValues.driver, Duration.ofSeconds(10));
+        wait = new WebDriverWait(ConfigValues.driver, Duration.ofSeconds(20));
         ConfigValues.driver.get(ConfigValues.url);
     }
 
@@ -90,20 +90,25 @@ public class WebDataCollect {
      */
     private void sortByScripId() {
         //LogManager.getLogger(WebDataCollect.class.getName()).info("Sorting Scrips ");
+//        try {
+//            List<WebElement> visibleTable = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.xpath("//*[@id='table']/div[1]/table/tbody/tr")));
+//        } catch (NoSuchElementException ex) {
+//            LogManager.getLogger(WebDataCollect.class.getName()).fatal("Sort button not found in page", ex);
+//        }
         WebElement sortColumnHeader = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='thead']/tr/th[1]/div/div")));
         sortColumnHeader.click();
         //LogManager.getLogger(WebDataCollect.class.getName()).info("Sort scrips Clicked");
         sleepForSeconds(5);
+//      -----removing this block due a new change in wesite on 2024/12/13        
         /*waiting this the next button on the page is clickable which means the full page is loaded*/
-        try {
-            WebElement activePaginationButton = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#slider-otherindices > div > div > div.slick-dots > div > div.custom-slick-dots.undefined > ul > li.slick-active > button")));
-            //LogManager.getLogger(WebDataCollect.class.getName()).info("text got "+activePaginationButton.getText());
-            if (!activePaginationButton.getText().equals("1")) {
-                LogManager.getLogger(WebDataCollect.class.getName()).info("Scrips Sorted but page not active");
-            }
-        } catch (NoSuchElementException ex) {
-            LogManager.getLogger(WebDataCollect.class.getName()).fatal("Sort button not found in page", ex);
-        }
+//        try {
+//            WebElement activePaginationButton = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#slider-otherindices > div > div > div.slick-dots > div > div.custom-slick-dots.undefined > ul > li.slick-active > button")));
+//            if (!activePaginationButton.getText().equals("1")) {
+//                LogManager.getLogger(WebDataCollect.class.getName()).info("Scrips Sorted but page not active");
+//            }
+//        } catch (NoSuchElementException ex) {
+//            LogManager.getLogger(WebDataCollect.class.getName()).fatal("Sort button not found in page", ex);
+//        }
     }
 
     private void getCurrentTimeStamp() {
