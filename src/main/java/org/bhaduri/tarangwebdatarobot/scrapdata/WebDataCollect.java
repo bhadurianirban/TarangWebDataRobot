@@ -70,7 +70,7 @@ public class WebDataCollect {
         chromeOptions.addArguments("--headless");
         chromeOptions.addArguments("--no-sandbox");
         ConfigValues.driver = new ChromeDriver(chromeOptions);
-        wait = new WebDriverWait(ConfigValues.driver, Duration.ofSeconds(20));
+        wait = new WebDriverWait(ConfigValues.driver, Duration.ofSeconds(10));
         ConfigValues.driver.get(ConfigValues.url);
     }
 
