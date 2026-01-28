@@ -69,8 +69,11 @@ public class WebDataCollect {
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--headless");
         chromeOptions.addArguments("--no-sandbox");
+        chromeOptions.addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36");
         ConfigValues.driver = new ChromeDriver(chromeOptions);
         wait = new WebDriverWait(ConfigValues.driver, Duration.ofSeconds(10));
+        //WebElement tableHeading = wait.until(ExpectedConditions.elementToBeClickable(By.className("MarketTable_theading__R8YA5")));
+        //tableHeading.click();
         ConfigValues.driver.get(ConfigValues.url);
     }
 
