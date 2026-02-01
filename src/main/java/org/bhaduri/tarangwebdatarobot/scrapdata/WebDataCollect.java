@@ -17,10 +17,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -41,10 +45,11 @@ public class WebDataCollect {
 
         initChromeDriver();
         initOutFile();
-        
+
         getCurrentTimeStamp();
 
         while (currentTime.isBefore(ConfigValues.endTime)) {
+            clickCookieAcceptButton();
             sortByScripId();
             resetScripValuesBuffer();
             getNiftyValue();
@@ -67,8 +72,10 @@ public class WebDataCollect {
         LogManager.getLogger(WebDataCollect.class.getName()).info("Chrome driver path " + ConfigValues.chromeDriverPath);
         System.setProperty("webdriver.chrome.driver", ConfigValues.chromeDriverPath);
         ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.addArguments("--headless");
+        chromeOptions.addArguments("--headless=new");
         chromeOptions.addArguments("--no-sandbox");
+        chromeOptions.addArguments("--window-size=1920,1080");
+        chromeOptions.addArguments("--start-maximized");
         chromeOptions.addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36");
         ConfigValues.driver = new ChromeDriver(chromeOptions);
         wait = new WebDriverWait(ConfigValues.driver, Duration.ofSeconds(10));
@@ -80,7 +87,7 @@ public class WebDataCollect {
     private void initOutFile() {
         try {
             scripDataFile = new BufferedWriter(new FileWriter(ConfigValues.scripDataFileName, true));
-            LogManager.getLogger(WebDataCollect.class.getName()).info("Output file "+ConfigValues.scripDataFileName+" initiated.");
+            LogManager.getLogger(WebDataCollect.class.getName()).info("Output file " + ConfigValues.scripDataFileName + " initiated.");
         } catch (IOException ex) {
             LogManager.getLogger(WebDataCollect.class.getName()).fatal("Error writing temporary scrap file", ex);
         }
@@ -92,14 +99,19 @@ public class WebDataCollect {
      * for the scrips listed in pages to change.
      */
     private void sortByScripId() {
-        //LogManager.getLogger(WebDataCollect.class.getName()).info("Sorting Scrips ");
-//        try {
-//            List<WebElement> visibleTable = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.xpath("//*[@id='table']/div[1]/table/tbody/tr")));
-//        } catch (NoSuchElementException ex) {
-//            LogManager.getLogger(WebDataCollect.class.getName()).fatal("Sort button not found in page", ex);
-//        }
-        WebElement sortColumnHeader = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='thead']/tr/th[1]/div/div")));
-        sortColumnHeader.click();
+        //LogManager.getLogger(WebDataCollect.class.getName()).info("Sorting Scrips Clicking on Scrip Sort...");
+        //        try {
+        //            List<WebElement> visibleTable = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.xpath("//*[@id='table']/div[1]/table/tbody/tr")));
+        //        } catch (NoSuchElementException ex) {
+        //            LogManager.getLogger(WebDataCollect.class.getName()).fatal("Sort button not found in page", ex);
+        //        }
+
+//        WebElement sortColumnHeader = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='thead']/tr/th[1]/div/div")));
+//        sortColumnHeader.click();
+        WebElement sortColumnHeader = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id='thead']/tr/th[1]/div/div")));
+        JavascriptExecutor executor = (JavascriptExecutor)ConfigValues.driver;
+        executor.executeScript("arguments[0].click();", sortColumnHeader);
+
         //LogManager.getLogger(WebDataCollect.class.getName()).info("Sort scrips Clicked");
         sleepForSeconds(5);
 //      -----removing this block due a new change in wesite on 2024/12/13        
@@ -118,6 +130,49 @@ public class WebDataCollect {
         Date timeStamp = new java.util.Date();
         currentTime = LocalTime.now();
         currentTimeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(timeStamp);
+    }
+
+    private void clickCookieAcceptButton() {
+        // ... inside your main code ...
+        //ConfigValues.driver.get("https://economictimes.indiatimes.com/..."); // Your URL
+
+        try {
+            // 1. Create a short wait (e.g., 5 seconds) just for the popup
+            // We don't want to wait 15+ seconds if the popup doesn't exist.
+            WebDriverWait popupWait = new WebDriverWait(ConfigValues.driver, Duration.ofSeconds(5));
+
+            // 2. Wait for the standard "Agree" button class used by Google Funding Choices
+            // The class 'fc-cta-consent' is the standard class for the "Agree" button.
+            WebElement consentButton = popupWait.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//button[contains(@class, 'fc-cta-consent')]")
+            ));
+
+            // 3. Click it
+            consentButton.click();
+
+            // 4. Wait for the overlay to disappear so it doesn't block other clicks
+            popupWait.until(ExpectedConditions.invisibilityOfElementLocated(By.className("fc-dialog-overlay")));
+            //LogManager.getLogger(WebDataCollect.class.getName()).info("GDPR Consent Popup handled successfully.");
+            //System.out.println("GDPR Consent Popup handled successfully.");
+
+        } catch (TimeoutException e) {
+            // This block runs if the popup DOES NOT appear (e.g., on your local machine)
+            //System.out.println("No Consent Popup found. Proceeding immediately...");
+            //LogManager.getLogger(WebDataCollect.class.getName()).info("No Consent Popup found. Proceeding immediately...");
+        }
+        //LogManager.getLogger(WebDataCollect.class.getName()).info("removing google ads...");
+        try {
+            ((JavascriptExecutor) ConfigValues.driver).executeScript(
+                    "var ads = document.querySelectorAll('iframe[id^=\"google_ads_iframe\"]');"
+                    + "ads.forEach(ad => ad.remove());"
+            );
+            //LogManager.getLogger(WebDataCollect.class.getName()).info("Removed blocking ads.");
+            //System.out.println("Removed blocking ads.");
+        } catch (Exception e) {
+            // Ignore errors if no ads are found
+        }
+
+// ... Continue with your table sorting code here ...
     }
 
     private void resetScripValuesBuffer() {
@@ -163,9 +218,10 @@ public class WebDataCollect {
 //        }
 
         /*now read the scrip values*/
-        sleepForSeconds(15);
-        List<WebElement> scripLtpValueElements = ConfigValues.driver.findElements(By.xpath("//*[@id='table']/div[1]/table/tbody/tr"));
+        sleepForSeconds(5);
+        List<WebElement> scripLtpValueElements = ConfigValues.driver.findElements(By.xpath("//*[@id='table']/div/table/tbody/tr"));
         List<WebElement> scripVolValueElements = ConfigValues.driver.findElements(By.xpath("//*[@id='scrollableTable']/table/tbody/tr[*]/td[12]"));
+        //System.out.println("Scrip : " + scripLtpValueElements.get(1).getText());
         if (scripLtpValueElements.size() == scripVolValueElements.size()) {
             List<String> scripLtpValues = scripLtpValueElements.stream().map(x -> x.getText().replaceAll("[\\t\\n\\r]+", " ").replaceAll(",", "")).collect(Collectors.toList());
             List<String> scripVolValues = scripVolValueElements.stream().map(x -> x.getText().replaceAll(",", "")).collect(Collectors.toList());
